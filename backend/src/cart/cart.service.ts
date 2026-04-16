@@ -56,7 +56,7 @@ export class CartService {
     let item: CartItem;
     if (existing) {
       existing.quantity += dto.quantity;
-      existing.subtotal = existing.quantity * dto.unitPrice;
+      existing.subtotal = existing.quantity * existing.unitPrice;
       item = await this.cartItemRepo.save(existing);
     } else {
       item = await this.cartItemRepo.save(

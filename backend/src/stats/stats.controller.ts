@@ -20,7 +20,7 @@ export class StatsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    const start = startDate ? new Date(startDate) : new Date(new Date().setDate(1));
+    const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const end = endDate ? new Date(endDate) : new Date();
     return this.statsService.getSpendingByPeriod(userId, start, end);
   }

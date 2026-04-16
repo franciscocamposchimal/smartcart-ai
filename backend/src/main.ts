@@ -13,7 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Security
-  app.use(helmet({ contentSecurityPolicy: false }));
+  app.use(helmet());
   app.use(compression());
 
   // CORS
