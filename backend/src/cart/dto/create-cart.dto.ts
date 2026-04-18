@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCartDto {
@@ -11,4 +11,10 @@ export class CreateCartDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @ApiProperty({ required: false, description: 'Optional spending budget for this cart' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  budget?: number;
 }

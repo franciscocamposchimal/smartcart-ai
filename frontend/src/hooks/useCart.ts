@@ -65,6 +65,16 @@ export function useCart() {
     }
   }, [fetchCarts]);
 
+  const setBudget = useCallback(async (cartId: string, budget: number) => {
+    try {
+      const res = await api.patch<{ success: boolean; data: Cart }>(`/cart/${cartId}/budget`, { budget });
+      setActiveCart(res.data);
+      setCarts((prev) => prev.map((c) => (c.id === cartId ? res.data : c)));
+    } catch (err: any) {
+      toast.error('Error al actualizar el presupuesto');
+    }
+  }, []);
+
   return {
     carts,
     activeCart,
@@ -74,5 +84,6 @@ export function useCart() {
     addItem,
     removeItem,
     saveCart,
+    setBudget,
   };
 }

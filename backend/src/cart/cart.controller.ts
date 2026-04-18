@@ -12,6 +12,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
+import { SetBudgetDto } from './dto/set-budget.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -64,6 +65,16 @@ export class CartController {
   @ApiOperation({ summary: 'Save/finalize a cart' })
   saveCart(@Param('id') id: string, @CurrentUser('sub') userId: string) {
     return this.cartService.saveCart(id, userId);
+  }
+
+  @Patch(':id/budget')
+  @ApiOperation({ summary: 'Set or update the spending budget for a cart' })
+  setBudget(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: SetBudgetDto,
+  ) {
+    return this.cartService.setBudget(id, userId, dto.budget);
   }
 
   @Delete(':id')

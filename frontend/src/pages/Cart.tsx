@@ -1,15 +1,26 @@
 import { useEffect, useState } from 'react';
-import { ShoppingCart, Trash2, Plus, Save, Store } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Save, Store, Wallet } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
-  const { carts, activeCart, loading, fetchCarts, createCart, removeItem, saveCart } = useCart();
+  const { carts, activeCart, loading, fetchCarts, createCart, removeItem, saveCart, setBudget } = useCart();
   const [showSaved, setShowSaved] = useState(false);
+  const [budgetInput, setBudgetInput] = useState('');
+  const [editingBudget, setEditingBudget] = useState(false);
 
   useEffect(() => {
     fetchCarts();
   }, []);
+
+  // Sync budget input when cart loads
+  useEffect(() => {
+    if (activeCart?.budget != null) {
+      setBudgetInput(String(activeCart.budget));
+    } else {
+      setBudgetInput('');
+    }
+  }, [activeCart?.id, activeCart?.budget]);
 
   const handleSaveCart = async () => {
     if (!activeCart) return;
@@ -20,6 +31,18 @@ export default function CartPage() {
     await saveCart(activeCart.id);
   };
 
+  const handleSetBudget = async () => {
+    if (!activeCart) return;
+    const value = parseFloat(budgetInput);
+    if (isNaN(value) || value < 0) {
+      toast.error('Ingresa un presupuesto válido');
+      return;
+    }
+    await setBudget(activeCart.id, value);
+    setEditingBudget(false);
+    toast.success('Presupuesto actualizado');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -27,6 +50,11 @@ export default function CartPage() {
       </div>
     );
   }
+
+  const budget = activeCart?.budget != null ? Number(activeCart.budget) : null;
+  const total = activeCart ? Number(activeCart.total) : 0;
+  const budgetPercent = budget != null && budget > 0 ? Math.min((total / budget) * 100, 100) : null;
+  const overBudget = budget != null && total > budget;
 
   return (
     <div className="space-y-4">
@@ -73,6 +101,62 @@ export default function CartPage() {
                 <p className="text-sm text-gray-500">
                   {activeCart.items?.length || 0} productos
                 </p>
+
+                {/* Budget section */}
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                      <Wallet size={14} />
+                      Presupuesto
+                    </span>
+                    <button
+                      onClick={() => setEditingBudget(!editingBudget)}
+                      className="text-xs text-primary-600 font-medium hover:underline"
+                    >
+                      {budget != null ? 'Cambiar' : 'Establecer'}
+                    </button>
+                  </div>
+
+                  {editingBudget ? (
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="number"
+                        value={budgetInput}
+                        onChange={(e) => setBudgetInput(e.target.value)}
+                        className="input flex-1 py-1.5 text-sm"
+                        placeholder="0.00"
+                        step="0.01"
+                        min="0"
+                      />
+                      <button onClick={handleSetBudget} className="btn-primary px-3 py-1.5 text-sm">
+                        Guardar
+                      </button>
+                      <button
+                        onClick={() => setEditingBudget(false)}
+                        className="px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : budget != null ? (
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className={overBudget ? 'text-red-600 font-semibold' : 'text-gray-600'}>
+                          {overBudget ? '⚠ Excediste el presupuesto' : `Restante: $${(budget - total).toFixed(2)}`}
+                        </span>
+                        <span className="text-gray-500">${budget.toFixed(2)}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${overBudget ? 'bg-red-500' : (budgetPercent ?? 0) > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          style={{ width: `${budgetPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400">Sin presupuesto establecido</p>
+                  )}
+                </div>
               </div>
 
               {/* Items */}

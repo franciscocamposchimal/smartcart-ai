@@ -87,6 +87,7 @@ export interface Cart {
   status: 'open' | 'saved' | 'completed';
   name?: string;
   total: number;
+  budget?: number;
   items: CartItem[];
   createdAt: string;
 }

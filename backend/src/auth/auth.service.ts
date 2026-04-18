@@ -66,6 +66,18 @@ export class AuthService {
     return data.user;
   }
 
+  async exchangeToken(supabaseToken: string) {
+    const { data, error } = await this.supabase.auth.getUser(supabaseToken);
+    if (error || !data.user) {
+      throw new UnauthorizedException('Invalid Supabase token');
+    }
+
+    const payload = { sub: data.user.id, email: data.user.email };
+    const token = this.jwtService.sign(payload);
+
+    return { user: data.user, accessToken: token };
+  }
+
   async getProfile(userId: string) {
     const { data, error } = await this.supabase.auth.admin.getUserById(userId);
     if (error) {
