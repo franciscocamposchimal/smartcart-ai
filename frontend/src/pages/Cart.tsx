@@ -16,7 +16,7 @@ export default function CartPage() {
   // Sync budget input when cart loads
   useEffect(() => {
     if (activeCart?.budget != null) {
-      setBudgetInput(String(Number(activeCart.budget)));
+      setBudgetInput(String(activeCart.budget));
     } else {
       setBudgetInput('');
     }
@@ -148,7 +148,7 @@ export default function CartPage() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full transition-all ${overBudget ? 'bg-red-500' : budgetPercent! > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                          className={`h-2 rounded-full transition-all ${overBudget ? 'bg-red-500' : (budgetPercent ?? 0) > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
                           style={{ width: `${budgetPercent}%` }}
                         />
                       </div>

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
+import toast from 'react-hot-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -44,8 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setToken(backendToken);
               localStorage.setItem('smartcart_token', backendToken);
               api.setToken(backendToken);
-            } catch {
-              // non-fatal: user will need to log in again
+            } catch (err: any) {
+              toast.error(err.message || 'Error al completar el inicio de sesión con Google');
             }
           }
         } else {
