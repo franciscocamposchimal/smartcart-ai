@@ -86,6 +86,12 @@ export class CartService {
     return this.cartRepo.save(cart);
   }
 
+  async setBudget(cartId: string, userId: string, budget: number): Promise<Cart> {
+    const cart = await this.findOne(cartId, userId);
+    cart.budget = budget;
+    return this.cartRepo.save(cart);
+  }
+
   async deleteCart(cartId: string, userId: string): Promise<void> {
     await this.findOne(cartId, userId);
     await this.cartRepo.delete(cartId);

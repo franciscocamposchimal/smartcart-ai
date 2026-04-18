@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ExchangeTokenDto } from './dto/exchange-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
@@ -25,6 +26,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with email and password' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Public()
+  @Post('exchange-token')
+  @ApiOperation({ summary: 'Exchange a Supabase OAuth token for a backend JWT' })
+  exchangeToken(@Body() dto: ExchangeTokenDto) {
+    return this.authService.exchangeToken(dto.supabaseToken);
   }
 
   @Get('profile')

@@ -9,6 +9,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -28,9 +29,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (session?.user) {
           setUser(session.user);
+          // When coming back from a Google OAuth redirect there is no backend
+          // JWT yet – exchange the Supabase access token for one.
+          if (event === 'SIGNED_IN' && !localStorage.getItem('smartcart_token')) {
+            try {
+              const data = await api.post<{ success: boolean; data: { accessToken: string; user: User } }>(
+                '/auth/exchange-token',
+                { supabaseToken: session.access_token },
+              );
+              const backendToken = data.data.accessToken;
+              setToken(backendToken);
+              localStorage.setItem('smartcart_token', backendToken);
+              api.setToken(backendToken);
+            } catch {
+              // non-fatal: user will need to log in again
+            }
+          }
         } else {
           setUser(null);
           setToken(null);
@@ -64,6 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.setToken(data.data.accessToken);
   };
 
+  const loginWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -73,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, token, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, token, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
